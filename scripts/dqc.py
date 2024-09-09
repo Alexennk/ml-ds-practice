@@ -5,11 +5,7 @@ import seaborn as sns
 
 
 def plot_distribution(df, column_name):
-    plt.figure(figsize=(8,4))
-    plt.xlabel(column_name)
-    plt.ylabel('Density')
-    sns.kdeplot(df[column_name], fill=True)
-    plt.show()
+    sns.histplot(df[column_name], kde=True)
 
 
 def check_duplicates(df):
