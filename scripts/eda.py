@@ -10,17 +10,6 @@ def transform_df_types(df, int_columns, float_columns=None, object_columns=None)
         df[object_columns] = df[object_columns].astype('category')
     return df
 
-def change_shop_attributes(df):
-
-    df.loc[df['shop_id'] == 0, 'shop_id'] = 57
-    df.loc[df['shop_id'] == 1, 'shop_id'] = 58
-    df.loc[df['shop_id'] == 10, 'shop_id'] = 11
-
-    df.loc[df['shop_name'] == '!Якутск Орджоникидзе, 56 фран', 'shop_name'] = 'Якутск Орджоникидзе, 56'
-    df.loc[df['shop_name'] == '!Якутск ТЦ "Центральный" фран', 'shop_name'] = 'Якутск ТЦ "Центральный"'
-    df.loc[df['shop_name'] == 'Жуковский ул. Чкалова 39м?', 'shop_name'] = 'Жуковский ул. Чкалова 39м²'
-
-    return df
 
 def train_add_lag_features(df, lags=3):
     new_df = df[['item_id', 'shop_id', 'date_block_num', 'item_cnt_month']]

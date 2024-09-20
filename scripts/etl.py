@@ -29,3 +29,16 @@ def add_month_year_columns(df):
     df['month'] = df['date_block_num'] % 12
     df['year'] = df['date_block_num'] // 12
     return df
+
+
+def change_shop_attributes(df):
+
+    df.loc[df['shop_id'] == 0, 'shop_id'] = 57
+    df.loc[df['shop_id'] == 1, 'shop_id'] = 58
+    df.loc[df['shop_id'] == 10, 'shop_id'] = 11
+
+    df.loc[df['shop_name'] == '!Якутск Орджоникидзе, 56 фран', 'shop_name'] = 'Якутск Орджоникидзе, 56'
+    df.loc[df['shop_name'] == '!Якутск ТЦ "Центральный" фран', 'shop_name'] = 'Якутск ТЦ "Центральный"'
+    df.loc[df['shop_name'] == 'Жуковский ул. Чкалова 39м?', 'shop_name'] = 'Жуковский ул. Чкалова 39м²'
+
+    return df
