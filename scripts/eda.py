@@ -1,5 +1,7 @@
 import numpy as np
 import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
 
 
 def transform_df_types(df, int_columns, float_columns=None, object_columns=None):
@@ -57,3 +59,37 @@ def threshold_sales(df, aggregated_df, column_name, on_test=False):
         aggregated_df.rename(columns={'item_cnt_month_x': 'item_cnt_month'}, inplace=True)
 
     return aggregated_df
+
+def plot_barpot_boxplot(df, column_name, figsize=(14, 7)):
+    # First Plot Data
+    column_aggregated = df.groupby([column_name], observed=False)['item_cnt_month'].mean()
+    column_aggregated = pd.DataFrame(column_aggregated)
+    column_aggregated.reset_index(inplace=True)
+    column_aggregated = column_aggregated.sort_values(['item_cnt_month'], ascending=False)
+
+    # Second Plot Data
+    var = column_name
+    data = pd.concat([df['item_cnt_month'], df[var]], axis=1)
+
+    # Create subplots in one row with two columns
+    fig, axes = plt.subplots(1, 2, figsize=figsize)  # Adjust the figsize as needed for better appearance
+
+    # First plot: Barplot
+    sns.barplot(x=column_aggregated['item_cnt_month'], 
+                y=column_aggregated[column_name], 
+                orient='h', 
+                order=column_aggregated[column_name], 
+                ax=axes[0])
+    axes[0].set_title(column_name + " Sales Comparison")
+    axes[0].set_xlabel("Average Sales Amount")
+    axes[0].set_ylabel(column_name)
+
+    # Second plot: Boxplot
+    sns.boxplot(x='item_cnt_month', y=var, data=data, orient='h', order=column_aggregated[column_name], ax=axes[1])
+    axes[1].set_title("Box Plots for " + column_name)
+    axes[1].set_xlabel("Item Count per Month")
+    axes[1].set_ylabel("")
+
+    # Display the plots
+    plt.tight_layout()
+    plt.show()
