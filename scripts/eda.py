@@ -60,12 +60,14 @@ def threshold_sales(df, aggregated_df, column_name, on_test=False):
 
     return aggregated_df
 
-def plot_barpot_boxplot(df, column_name, figsize=(14, 7)):
+def plot_barpot_boxplot(df, column_name, figsize=(14, 7), leave=None):
     # First Plot Data
     column_aggregated = df.groupby([column_name], observed=False)['item_cnt_month'].mean()
     column_aggregated = pd.DataFrame(column_aggregated)
     column_aggregated.reset_index(inplace=True)
     column_aggregated = column_aggregated.sort_values(['item_cnt_month'], ascending=False)
+    if leave is not None:
+        column_aggregated = column_aggregated[:leave]
 
     # Second Plot Data
     var = column_name
