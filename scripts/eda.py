@@ -4,8 +4,8 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 
-def transform_df_types(df, int_columns, float_columns=None, object_columns=None):
-    df[int_columns] = df[int_columns].astype(np.int32)
+def transform_df_types(df, int_columns, float_columns=None, object_columns=None, int_type=np.int32):
+    df[int_columns] = df[int_columns].astype(int_type)
     if float_columns is not None:
         df[float_columns] = df[float_columns].astype(np.float32)
     if object_columns is not None:
