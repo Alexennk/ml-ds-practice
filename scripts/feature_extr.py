@@ -4,26 +4,39 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 
-def train_add_lag_features(df, lags=3):
-    new_df = df[['item_id', 'shop_id', 'date_block_num', 'item_cnt_month']]
-    for lag in range(1, lags + 1):
-        new_df.loc[:, 'date_block_num'] = new_df['date_block_num'] + lag
-        new_df.columns = ['item_id', 'shop_id', 'date_block_num', 'item_cnt_month_lag_' + str(lag)]
-        df = df.merge(new_df, on=['item_id', 'shop_id', 'date_block_num'], how='left')
-
-    df[['item_cnt_month_lag_1', 'item_cnt_month_lag_2', 'item_cnt_month_lag_3']] = df[['item_cnt_month_lag_1', 'item_cnt_month_lag_2', 'item_cnt_month_lag_3']].fillna(0)
+def transform_df_types(df, int_columns, float_columns=None, object_columns=None, int_type=np.int32):
+    df[int_columns] = df[int_columns].astype(int_type)
+    if float_columns is not None:
+        df[float_columns] = df[float_columns].astype(np.float32)
+    if object_columns is not None:
+        df[object_columns] = df[object_columns].astype('category')
     return df
 
 
-def test_add_lag_features(df, original_df, lags=3):
-    for lag in range(1, lags + 1):
-        new_df = original_df[['item_id', 'shop_id', 'item_cnt_month', 'date_block_num']]
-        new_df = new_df[new_df['date_block_num'] == 34 - lag]
-        new_df.drop('date_block_num', axis=1, inplace=True)
-        new_df.columns = ['item_id', 'shop_id', 'item_cnt_month_lag_' + str(lag)]
-        df = df.merge(new_df, on=['item_id', 'shop_id'], how='left')
+def train_add_lag_features(df, col, on=['item_id', 'shop_id', 'date_block_num'], lags=[1, 2, 3]):
+    new_df = df[['item_id', 'shop_id', 'date_block_num', col]]
+    for lag in lags:
+        tmp = new_df.copy()
+        tmp.loc[:, 'date_block_num'] = tmp['date_block_num'] + lag
+        tmp.columns = ['item_id', 'shop_id', 'date_block_num', col + '_lag_' + str(lag)]
+        df = df.merge(tmp, on=['item_id', 'shop_id', 'date_block_num'], how='left')
 
-    df.fillna(0, inplace=True)
+    for lag in lags:
+        df['{}_lag_{}'.format(col, lag)] = df['{}_lag_{}'.format(col, lag)].fillna(0)
+    return df
+
+
+def test_add_lag_features(df, original_df, col, on=['item_id', 'shop_id'], lags=[1, 2, 3]):
+    new_df = original_df[['item_id', 'shop_id', 'date_block_num', col]]
+    for lag in lags:
+        tmp = new_df.copy()
+        tmp = tmp[tmp['date_block_num'] == 34 - lag]
+        tmp.drop('date_block_num', axis=1, inplace=True)
+        tmp.columns = ['item_id', 'shop_id', col + '_lag_' + str(lag)]
+        df = df.merge(tmp, on=['item_id', 'shop_id'], how='left')
+
+    for lag in lags:
+        df['{}_lag_{}'.format(col, lag)] = df['{}_lag_{}'.format(col, lag)].fillna(0)
     return df
 
 
