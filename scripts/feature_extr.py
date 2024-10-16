@@ -38,30 +38,3 @@ def test_add_lag_features(df, original_df, col, add_name='', on_columns=['shop_i
     for lag in lags:
         df['{}_lag_{}'.format(col + add_name, lag)] = df['{}_lag_{}'.format(col + add_name, lag)].fillna(0)
     return df
-
-
-def threshold_sales(df, aggregated_df, column_name, on_test=False):
-    column_aggregated = df.groupby([column_name])['item_cnt_month'].mean()
-    column_aggregated = pd.DataFrame(column_aggregated).reset_index()
-
-    def divide_sales(sales):
-        low_threshold = column_aggregated['item_cnt_month'].quantile(0.25)
-        high_threshold = column_aggregated['item_cnt_month'].quantile(0.75)
-
-        if sales < low_threshold:
-            return 0
-        elif sales < high_threshold:
-            return 1
-        else:
-            return 2
-        
-    column_aggregated[column_name + '_sales_level'] = column_aggregated['item_cnt_month'].apply(divide_sales)
-
-    aggregated_df = aggregated_df.merge(column_aggregated, on=column_name, how='left')
-    if on_test:
-        aggregated_df.drop('item_cnt_month', axis=1, inplace=True)
-    else:
-        aggregated_df.drop('item_cnt_month_y', axis=1, inplace=True)
-        aggregated_df.rename(columns={'item_cnt_month_x': 'item_cnt_month'}, inplace=True)
-
-    return aggregated_df
