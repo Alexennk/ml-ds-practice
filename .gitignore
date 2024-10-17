@@ -1,3 +1,4 @@
 data/
 notebooks/competitive-data-science-predict-future-sales.zip
 scripts/__pycache__/
+notebooks/shap_summary.png
