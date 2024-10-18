@@ -73,6 +73,7 @@ class FeatureExtractionLayer:
             test_df = test_df.merge(united_subdf_sorted, on=['shop_id', 'item_id', 'is_test'], how='left')
 
             test_df.drop(columns=['is_test', 'date_block_num'], inplace=True)
+            test_df = test_df.loc[test_df.groupby('ID')['months_since_last_sale'].idxmax()] # drop duplicates along the "ID" feature
             test_df.to_csv('../data/test_months.csv', index=False)
 
         int_columns = ['ID', 'shop_id', 'item_id', 'item_category_id', 'months_since_last_sale']
