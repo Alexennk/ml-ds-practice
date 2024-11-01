@@ -1,22 +1,14 @@
 import numpy as np
 import pandas as pd
 
-
-def transform_df_types(df, int_columns, float_columns=None, object_columns=None, int_type=np.int32):
-    df[int_columns] = df[int_columns].astype(int_type)
-    if float_columns is not None:
-        df[float_columns] = df[float_columns].astype(np.float32)
-    if object_columns is not None:
-        df[object_columns] = df[object_columns].astype('category')
-    return df
+import sys
+sys.path.append('../')
+from scripts.etl import transform_df_types
 
 
 class FeatureExtractionLayer:
-    def __init__(self):
-        pass
-    
-
-    def train_add_months_since_last_sale(self, aggregated_df, load_precalculated=False, precalculated_path='../data/aggregated_months.csv'):
+    @staticmethod
+    def train_add_months_since_last_sale(aggregated_df, load_precalculated=False, precalculated_path='../data/aggregated_months.csv'):
         
         if load_precalculated:
             aggregated_sorted = pd.read_csv(precalculated_path)
@@ -44,7 +36,8 @@ class FeatureExtractionLayer:
         return aggregated_train_df
     
 
-    def test_add_months_since_last_sale(self, aggregated_df, test_df, load_precalculated=False, precalculated_path='../data/test_months.csv'):
+    @staticmethod
+    def test_add_months_since_last_sale(aggregated_df, test_df, load_precalculated=False, precalculated_path='../data/test_months.csv'):
         
         if load_precalculated:
             test_df = pd.read_csv(precalculated_path)
@@ -84,7 +77,8 @@ class FeatureExtractionLayer:
         return test_df
 
 
-    def train_add_lag_features(self, df, col, add_name='', on_columns=['date_block_num', 'shop_id', 'item_id'], operation='mean', lags=[1, 2, 3]):
+    @staticmethod
+    def train_add_lag_features(df, col, add_name='', on_columns=['date_block_num', 'shop_id', 'item_id'], operation='mean', lags=[1, 2, 3]):
         new_df = df[on_columns + [col]]
         new_df = new_df.groupby(on_columns).agg({col: operation}).reset_index()
         for lag in lags:
@@ -98,7 +92,8 @@ class FeatureExtractionLayer:
         return df
 
 
-    def test_add_lag_features(self, df, original_df, col, add_name='', on_columns=['shop_id', 'item_id'], operation='mean', lags=[1, 2, 3]):
+    @staticmethod
+    def test_add_lag_features(df, original_df, col, add_name='', on_columns=['shop_id', 'item_id'], operation='mean', lags=[1, 2, 3]):
         new_df = original_df[on_columns + ['date_block_num', col]]
         new_df = new_df.groupby(on_columns + ['date_block_num']).agg({col: operation}).reset_index()
         for lag in lags:
@@ -113,9 +108,10 @@ class FeatureExtractionLayer:
         return df
 
 
-    def train_transform(self, df, aggregated_df):
+    @staticmethod
+    def train_transform(df, aggregated_df):
         # 1. Add "months_since_last_sale" feature
-        aggregated_df = self.train_add_months_since_last_sale(aggregated_df, load_precalculated=True)
+        aggregated_df = FeatureExtractionLayer.train_add_months_since_last_sale(aggregated_df, load_precalculated=True)
 
         # 2. Calculate revenue
         df['revenue'] = df['item_price'] * df['item_cnt_day']
@@ -123,19 +119,19 @@ class FeatureExtractionLayer:
         aggregated_df = aggregated_df.merge(train_aggregated, on=['date_block_num', 'shop_id'], how='left')
 
         # 3. Add revenue lagged features
-        aggregated_lagged = self.train_add_lag_features(aggregated_df, 'revenue', on_columns=['shop_id', 'date_block_num'], operation='mean', lags=[1, 2, 3, 6, 12])
+        aggregated_lagged = FeatureExtractionLayer.train_add_lag_features(aggregated_df, 'revenue', on_columns=['shop_id', 'date_block_num'], operation='mean', lags=[1, 2, 3, 6, 12])
 
         # 4. Clip "item_cnt_month" into [0, 20] range
         aggregated_lagged['item_cnt_month'] = aggregated_lagged['item_cnt_month'].clip(0, 20)
 
         # 5. Add "item_cnt_month" lagged features
-        aggregated_lagged = self.train_add_lag_features(aggregated_lagged, 'item_cnt_month', on_columns=['item_id', 'shop_id', 'date_block_num'], lags=[1, 2, 3, 6, 12])
+        aggregated_lagged = FeatureExtractionLayer.train_add_lag_features(aggregated_lagged, 'item_cnt_month', on_columns=['item_id', 'shop_id', 'date_block_num'], lags=[1, 2, 3, 6, 12])
 
         # 6. Add average "item_cnt_month" lagged features by category
-        aggregated_lagged = self.train_add_lag_features(aggregated_lagged, 'item_cnt_month', add_name='_cat_', on_columns=['item_category_id', 'date_block_num'], lags=[1, 2, 3])
+        aggregated_lagged = FeatureExtractionLayer.train_add_lag_features(aggregated_lagged, 'item_cnt_month', add_name='_cat_', on_columns=['item_category_id', 'date_block_num'], lags=[1, 2, 3])
 
         # 7. Add average "item_cnt_month" lagged features by category and shop
-        aggregated_lagged = self.train_add_lag_features(aggregated_lagged, 'item_cnt_month', add_name='_cat_shop_', on_columns=['item_category_id', 'shop_id', 'date_block_num'], lags=[1, 2, 3])
+        aggregated_lagged = FeatureExtractionLayer.train_add_lag_features(aggregated_lagged, 'item_cnt_month', add_name='_cat_shop_', on_columns=['item_category_id', 'shop_id', 'date_block_num'], lags=[1, 2, 3])
 
         # 8. Add "number of days in the month" feature
         days = pd.Series([31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31])
@@ -145,14 +141,15 @@ class FeatureExtractionLayer:
         avg_item_price = aggregated_lagged.groupby(['item_id', 'date_block_num'])['item_price'].mean().reset_index()
         avg_item_price.columns = ['item_id', 'date_block_num', 'avg_item_price']
         aggregated_lagged = aggregated_lagged.merge(avg_item_price, on=['item_id', 'date_block_num'], how='left')
-        aggregated_lagged = self.train_add_lag_features(aggregated_lagged, 'avg_item_price', on_columns=['item_id', 'date_block_num'], lags=[1, 2, 3, 4, 5, 6])
+        aggregated_lagged = FeatureExtractionLayer.train_add_lag_features(aggregated_lagged, 'avg_item_price', on_columns=['item_id', 'date_block_num'], lags=[1, 2, 3, 4, 5, 6])
 
         return aggregated_lagged
     
 
-    def test_transform(self, df, aggregated_df, test_df):
+    @staticmethod
+    def test_transform(df, aggregated_df, test_df):
         # 1. Add "months_since_last_sale" feature
-        test_df = self.test_add_months_since_last_sale(aggregated_df, test_df, load_precalculated=True)
+        test_df = FeatureExtractionLayer.test_add_months_since_last_sale(aggregated_df, test_df, load_precalculated=True)
 
         # 2. Calculate revenue
         df['revenue'] = df['item_price'] * df['item_cnt_day']
@@ -160,19 +157,19 @@ class FeatureExtractionLayer:
         aggregated_df = aggregated_df.merge(train_aggregated, on=['date_block_num', 'shop_id'], how='left')
 
         # 3. Add revenue lagged features
-        test_lagged = self.test_add_lag_features(test_df, aggregated_df, col='revenue', on_columns=['shop_id'], lags=[1, 2, 3, 6, 12])
+        test_lagged = FeatureExtractionLayer.test_add_lag_features(test_df, aggregated_df, col='revenue', on_columns=['shop_id'], lags=[1, 2, 3, 6, 12])
 
         # 3.5. Clip "item_cnt_month" into [0, 20] range
         aggregated_df['item_cnt_month'] = aggregated_df['item_cnt_month'].clip(0, 20)
 
         # 4. Add "item_cnt_month" lagged features
-        test_lagged = self.test_add_lag_features(test_lagged, aggregated_df, col='item_cnt_month', on_columns=['item_id', 'shop_id'], lags=[1, 2, 3, 6, 12])
+        test_lagged = FeatureExtractionLayer.test_add_lag_features(test_lagged, aggregated_df, col='item_cnt_month', on_columns=['item_id', 'shop_id'], lags=[1, 2, 3, 6, 12])
 
         # 5. Add average "item_cnt_month" lagged features by category
-        test_lagged = self.test_add_lag_features(test_lagged, aggregated_df, col='item_cnt_month', add_name='_cat_', on_columns=['item_category_id'], lags=[1, 2, 3])
+        test_lagged = FeatureExtractionLayer.test_add_lag_features(test_lagged, aggregated_df, col='item_cnt_month', add_name='_cat_', on_columns=['item_category_id'], lags=[1, 2, 3])
 
         # 6. Add average "item_cnt_month" lagged features by category and shop
-        test_lagged = self.test_add_lag_features(test_lagged, aggregated_df, col='item_cnt_month', add_name='_cat_shop_', on_columns=['item_category_id', 'shop_id'], lags=[1, 2, 3])
+        test_lagged = FeatureExtractionLayer.test_add_lag_features(test_lagged, aggregated_df, col='item_cnt_month', add_name='_cat_shop_', on_columns=['item_category_id', 'shop_id'], lags=[1, 2, 3])
 
         # 7. Add "month", "year" features
         test_lagged['month'] = 10
@@ -186,8 +183,6 @@ class FeatureExtractionLayer:
         avg_item_price = aggregated_df.groupby(['item_id', 'date_block_num'])['item_price'].mean().reset_index()
         avg_item_price.columns = ['item_id', 'date_block_num', 'avg_item_price']
         aggregated_df = aggregated_df.merge(avg_item_price, on=['item_id', 'date_block_num'], how='left')
-        test_lagged = self.test_add_lag_features(test_lagged, aggregated_df, col='avg_item_price', on_columns=['item_id'], lags=[1, 2, 3, 4, 5, 6])
+        test_lagged = FeatureExtractionLayer.test_add_lag_features(test_lagged, aggregated_df, col='avg_item_price', on_columns=['item_id'], lags=[1, 2, 3, 4, 5, 6])
 
         return test_lagged
-    
-

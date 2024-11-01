@@ -12,7 +12,9 @@ class TimeSeriesSplit(BaseCrossValidator):
 
     Attributes:
         n_splits: the number of train:test pairs to return
+        method: 'expanding' or 'sliding'
         trait_start: first month number to be included in splits
+        random_state: random seed
     """
 
     def __init__(self, n_splits=5, method='expanding', random_state=None, train_start=0):
@@ -56,96 +58,90 @@ class TimeSeriesSplit(BaseCrossValidator):
             raise ValueError("'method' parameter should be 'expanding' or 'sliding'")
 
 
-def transform_df_types(df, int_columns, float_columns=None, object_columns=None, int_type=np.int32):
-    df[int_columns] = df[int_columns].astype(int_type)
-    if float_columns is not None:
-        df[float_columns] = df[float_columns].astype(np.float32)
-    if object_columns is not None:
-        df[object_columns] = df[object_columns].astype('category')
-    return df
-
-
-def train_linear_regression(X, y, cv_method='expanding', return_scores=False, return_model=False, cv_n_splits=5):
-    
-    """
-    Returns on of these: 
-        - None
-        - model
-        - scores
-        - model, scores
-    """
-
-    scores = []
-    tscv = TimeSeriesSplit(n_splits=cv_n_splits, method=cv_method)
-
-    for train_idx, test_idx in tscv.split(X):
-        X_new = X.copy()
-        X_new.drop('date_block_num', axis=1, inplace=True)
-        X_train, X_test = X_new[train_idx], X_new[test_idx]
-        y_train, y_test = y[train_idx], y[test_idx]
+class TrainFirstModels:
+    @staticmethod
+    def train_linear_regression(X, y, cv_method='expanding', return_scores=False, return_model=False, cv_n_splits=5):
         
-        model = LinearRegression()
+        """
+        Returns on of these: 
+            - None
+            - model
+            - scores
+            - model, scores
+        """
 
-        model.fit(X_train, y_train)
+        scores = []
+        tscv = TimeSeriesSplit(n_splits=cv_n_splits, method=cv_method)
 
-        y_pred = model.predict(X_test)
-        score = np.sqrt(mean_squared_error(y_test, y_pred))
-        scores.append(score)
+        for train_idx, test_idx in tscv.split(X):
+            X_new = X.copy()
+            X_new.drop('date_block_num', axis=1, inplace=True)
+            X_train, X_test = X_new[train_idx], X_new[test_idx]
+            y_train, y_test = y[train_idx], y[test_idx]
+            
+            model = LinearRegression()
 
-        print(f"{len(scores)} split RMSE: {score:.2f}\n")
-    
-    print(f"Average RMSE: {np.mean(scores):.2f}")
+            model.fit(X_train, y_train)
 
-    if return_scores or return_model:
-        to_return = []
-        if return_model: to_return.append(model)
-        if return_scores: to_return.append(scores)
-        return tuple(to_return)
+            y_pred = model.predict(X_test)
+            score = np.sqrt(mean_squared_error(y_test, y_pred))
+            scores.append(score)
 
-
-def train_xgboost(X, y, cv_method='expanding', return_scores=False, return_model=False, verbose=False, cv_n_splits=5,
-                   n_estimators=1000, max_depth=7, learning_rate=0.05, early_stopping_rounds=30, subsample=0.8, colsample_bytree=0.8):
-    
-    """
-    Returns on of these: 
-        - None
-        - model
-        - scores
-        - model, scores
-    """
-
-    scores = []
-    tscv = TimeSeriesSplit(n_splits=cv_n_splits, method=cv_method)
-
-    for train_idx, test_idx in tscv.split(X):
-        X_new = X.copy()
-        X_new.drop('date_block_num', axis=1, inplace=True)
-        X_train, X_test = X_new[train_idx], X_new[test_idx]
-        y_train, y_test = y[train_idx], y[test_idx]
+            print(f"{len(scores)} split RMSE: {score:.2f}\n")
         
-        model = XGBRegressor(
-            max_depth=max_depth,
-            n_estimators=n_estimators,
-            learning_rate=learning_rate,    
-            eval_metric="rmse",
-            early_stopping_rounds=early_stopping_rounds,
-            subsample=subsample,
-            colsample_bytree=colsample_bytree,
-            random_state=42
-        )
+        print(f"Average RMSE: {np.mean(scores):.2f}")
 
-        model.fit(X_train, y_train, eval_set=[(X_train, y_train), (X_test, y_test)], verbose=verbose)
+        if return_scores or return_model:
+            to_return = []
+            if return_model: to_return.append(model)
+            if return_scores: to_return.append(scores)
+            return tuple(to_return)
 
-        y_pred = model.predict(X_test)
-        score = np.sqrt(mean_squared_error(y_test, y_pred))
-        scores.append(score)
 
-        print(f"{len(scores)} split RMSE: {score:.2f}\n")
-    
-    print(f"Average RMSE: {np.mean(scores):.2f}")
+    @staticmethod
+    def train_xgboost(X, y, cv_method='expanding', return_scores=False, return_model=False, verbose=False, cv_n_splits=5,
+                    n_estimators=1000, max_depth=7, learning_rate=0.05, early_stopping_rounds=30, subsample=0.8, colsample_bytree=0.8):
+        
+        """
+        Returns on of these: 
+            - None
+            - model
+            - scores
+            - model, scores
+        """
 
-    if return_scores or return_model:
-        to_return = []
-        if return_model: to_return.append(model)
-        if return_scores: to_return.append(scores)
-        return tuple(to_return)
+        scores = []
+        tscv = TimeSeriesSplit(n_splits=cv_n_splits, method=cv_method)
+
+        for train_idx, test_idx in tscv.split(X):
+            X_new = X.copy()
+            X_new.drop('date_block_num', axis=1, inplace=True)
+            X_train, X_test = X_new[train_idx], X_new[test_idx]
+            y_train, y_test = y[train_idx], y[test_idx]
+            
+            model = XGBRegressor(
+                max_depth=max_depth,
+                n_estimators=n_estimators,
+                learning_rate=learning_rate,    
+                eval_metric="rmse",
+                early_stopping_rounds=early_stopping_rounds,
+                subsample=subsample,
+                colsample_bytree=colsample_bytree,
+                random_state=42
+            )
+
+            model.fit(X_train, y_train, eval_set=[(X_train, y_train), (X_test, y_test)], verbose=verbose)
+
+            y_pred = model.predict(X_test)
+            score = np.sqrt(mean_squared_error(y_test, y_pred))
+            scores.append(score)
+
+            print(f"{len(scores)} split RMSE: {score:.2f}\n")
+        
+        print(f"Average RMSE: {np.mean(scores):.2f}")
+
+        if return_scores or return_model:
+            to_return = []
+            if return_model: to_return.append(model)
+            if return_scores: to_return.append(scores)
+            return tuple(to_return)
