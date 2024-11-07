@@ -1,5 +1,6 @@
 data/
 submissions/
+models/
 notebooks/competitive-data-science-predict-future-sales.zip
 notebooks/catboost_info/
 scripts/__pycache__/
