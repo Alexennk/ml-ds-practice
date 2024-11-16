@@ -4,6 +4,7 @@ from sklearn.metrics import mean_squared_error
 from sklearn.model_selection import BaseCrossValidator
 from xgboost import XGBRegressor
 from sklearn.linear_model import LinearRegression
+from sklearn.preprocessing import StandardScaler
 
 
 class TimeSeriesSplit(BaseCrossValidator):
@@ -58,10 +59,10 @@ class TimeSeriesSplit(BaseCrossValidator):
             raise ValueError("'method' parameter should be 'expanding' or 'sliding'")
 
 
-class TrainFirstModels:
+class ModelTrainer:
+
     @staticmethod
-    def train_linear_regression(X, y, cv_method='expanding', return_scores=False, return_model=False, cv_n_splits=5):
-        
+    def train_model(X, y, model, apply_scaling=False, cv_method='expanding', cv_n_splits=5, train_start=0, eval_set=False, return_scores=False, return_model=False):
         """
         Returns on of these: 
             - None
@@ -71,7 +72,7 @@ class TrainFirstModels:
         """
 
         scores = []
-        tscv = TimeSeriesSplit(n_splits=cv_n_splits, method=cv_method)
+        tscv = TimeSeriesSplit(n_splits=cv_n_splits, method=cv_method, train_start=train_start)
 
         for train_idx, test_idx in tscv.split(X):
             X_new = X.copy()
@@ -79,9 +80,15 @@ class TrainFirstModels:
             X_train, X_test = X_new[train_idx], X_new[test_idx]
             y_train, y_test = y[train_idx], y[test_idx]
             
-            model = LinearRegression()
+            if apply_scaling:
+                scaler = StandardScaler()
+                X_train = scaler.fit_transform(X_train)
+                X_test = scaler.transform(X_test)
 
-            model.fit(X_train, y_train)
+            if eval_set:
+                model.fit(X_train, y_train, eval_set=[(X_test, y_test)], verbose=False)
+            else:
+                model.fit(X_train, y_train)
 
             y_pred = model.predict(X_test)
             score = np.sqrt(mean_squared_error(y_test, y_pred))
@@ -95,53 +102,6 @@ class TrainFirstModels:
             to_return = []
             if return_model: to_return.append(model)
             if return_scores: to_return.append(scores)
-            return tuple(to_return)
 
-
-    @staticmethod
-    def train_xgboost(X, y, cv_method='expanding', return_scores=False, return_model=False, verbose=False, cv_n_splits=5,
-                    n_estimators=1000, max_depth=7, learning_rate=0.05, early_stopping_rounds=30, subsample=0.8, colsample_bytree=0.8):
-        
-        """
-        Returns on of these: 
-            - None
-            - model
-            - scores
-            - model, scores
-        """
-
-        scores = []
-        tscv = TimeSeriesSplit(n_splits=cv_n_splits, method=cv_method)
-
-        for train_idx, test_idx in tscv.split(X):
-            X_new = X.copy()
-            X_new.drop('date_block_num', axis=1, inplace=True)
-            X_train, X_test = X_new[train_idx], X_new[test_idx]
-            y_train, y_test = y[train_idx], y[test_idx]
-            
-            model = XGBRegressor(
-                max_depth=max_depth,
-                n_estimators=n_estimators,
-                learning_rate=learning_rate,    
-                eval_metric="rmse",
-                early_stopping_rounds=early_stopping_rounds,
-                subsample=subsample,
-                colsample_bytree=colsample_bytree,
-                random_state=42
-            )
-
-            model.fit(X_train, y_train, eval_set=[(X_train, y_train), (X_test, y_test)], verbose=verbose)
-
-            y_pred = model.predict(X_test)
-            score = np.sqrt(mean_squared_error(y_test, y_pred))
-            scores.append(score)
-
-            print(f"{len(scores)} split RMSE: {score:.2f}\n")
-        
-        print(f"Average RMSE: {np.mean(scores):.2f}")
-
-        if return_scores or return_model:
-            to_return = []
-            if return_model: to_return.append(model)
-            if return_scores: to_return.append(scores)
+            if len(to_return) == 1: return to_return[0]
             return tuple(to_return)

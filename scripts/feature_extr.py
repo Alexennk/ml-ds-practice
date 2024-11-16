@@ -56,12 +56,8 @@ class FeatureExtractionLayer:
                         aggregated_sorted.at[row.Index, 'months_since_last_sale'] = row.date_block_num - row_prev['date_block_num']
 
             aggregated_sorted.to_csv(precalculated_path, index=False)
-        
-        int_columns = ['date_block_num', 'shop_id', 'item_id', 'month', 'year', 'item_category_id', 'months_since_last_sale']
-        float_columns = ['item_price', 'item_cnt_month']
-        object_columns = ['item_name', 'item_category_name', 'shop_name']
 
-        aggregated_train_df = transform_df_types(aggregated_sorted, int_columns, float_columns, object_columns)
+        aggregated_train_df = transform_df_types(aggregated_sorted)
 
         aggregated_train_df['months_since_last_sale'] = aggregated_train_df['months_since_last_sale'].replace(-1, 0)
             
@@ -104,10 +100,7 @@ class FeatureExtractionLayer:
             test_df = test_df.loc[test_df.groupby('ID')['months_since_last_sale'].idxmax()] # drop duplicates along the "ID" feature
             test_df.to_csv('../data/test_months.csv', index=False)
 
-        int_columns = ['ID', 'shop_id', 'item_id', 'item_category_id', 'months_since_last_sale']
-        object_columns = ['item_name', 'item_category_name', 'shop_name']
-
-        test_df = transform_df_types(test_df, int_columns, object_columns=object_columns)
+        test_df = transform_df_types(test_df)
 
         test_df['months_since_last_sale'] = test_df['months_since_last_sale'].replace(-1, 0)
 
