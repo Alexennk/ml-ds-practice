@@ -40,7 +40,7 @@ class FeatureExtractionLayer:
         if load_precalculated:
             aggregated_sorted = pd.read_csv(precalculated_path)
         else:
-            aggregated_sorted = aggregated_df.sort_values(by=['shop_id', 'item_id', 'date_block_num']).reset_index(drop=True)
+            aggregated_sorted = aggregated_df.sort_values(by=['item_id', 'date_block_num']).reset_index(drop=True)
 
             aggregated_sorted['months_since_last_sale'] = -1
 
@@ -49,8 +49,11 @@ class FeatureExtractionLayer:
                     continue
                 
                 row_prev = aggregated_sorted.iloc[row.Index - 1]
-                if row_prev['shop_id'] == row.shop_id and row_prev['item_id'] == row.item_id:
-                    aggregated_sorted.at[row.Index, 'months_since_last_sale'] = row.date_block_num - row_prev['date_block_num']
+                if row_prev['item_id'] == row.item_id:
+                    if row.date_block_num == row_prev['date_block_num']:
+                        aggregated_sorted.at[row.Index, 'months_since_last_sale'] = row_prev['months_since_last_sale']
+                    else:
+                        aggregated_sorted.at[row.Index, 'months_since_last_sale'] = row.date_block_num - row_prev['date_block_num']
 
             aggregated_sorted.to_csv(precalculated_path, index=False)
         
@@ -71,28 +74,31 @@ class FeatureExtractionLayer:
         if load_precalculated:
             test_df = pd.read_csv(precalculated_path)
         else:
-            train_subdf = aggregated_df.copy()[['date_block_num', 'shop_id', 'item_id', 'months_since_last_sale']]
+            train_subdf = aggregated_df.copy()[['date_block_num', 'item_id', 'months_since_last_sale']]
             train_subdf['is_test'] = 0
 
-            test_subdf = test_df[['shop_id', 'item_id']]
+            test_subdf = test_df[['item_id']]
             test_subdf['is_test'] = 1
             test_subdf['date_block_num'] = 34
             test_subdf['months_since_last_sale'] = -1
 
             united_subdf = pd.concat([train_subdf, test_subdf])
 
-            united_subdf_sorted = united_subdf.sort_values(by=['shop_id', 'item_id', 'date_block_num']).reset_index(drop=True)
+            united_subdf_sorted = united_subdf.sort_values(by=['item_id', 'date_block_num']).reset_index(drop=True)
 
             for row in united_subdf_sorted.itertuples():
                 if row.Index == 0 or row.is_test == 0: 
                     continue
                 
                 row_prev = united_subdf_sorted.iloc[row.Index - 1]
-                if row_prev['shop_id'] == row.shop_id and row_prev['item_id'] == row.item_id:
-                    united_subdf_sorted.at[row.Index, 'months_since_last_sale'] = row.date_block_num - row_prev['date_block_num']
+                if row_prev['item_id'] == row.item_id:
+                    if row.date_block_num == row_prev['date_block_num']:
+                        united_subdf_sorted.at[row.Index, 'months_since_last_sale'] = row_prev['months_since_last_sale']
+                    else:
+                        united_subdf_sorted.at[row.Index, 'months_since_last_sale'] = row.date_block_num - row_prev['date_block_num']
 
             test_df['is_test'] = 1
-            test_df = test_df.merge(united_subdf_sorted, on=['shop_id', 'item_id', 'is_test'], how='left')
+            test_df = test_df.merge(united_subdf_sorted, on=['item_id', 'is_test'], how='left')
 
             test_df.drop(columns=['is_test', 'date_block_num'], inplace=True)
             test_df = test_df.loc[test_df.groupby('ID')['months_since_last_sale'].idxmax()] # drop duplicates along the "ID" feature
