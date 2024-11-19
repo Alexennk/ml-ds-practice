@@ -7,32 +7,6 @@ from scripts.etl import transform_df_types
 
 
 class FeatureExtractionLayer:
-    @staticmethod
-    def add_zero_records(df, month_left=11, month_right=33, num_new_records=100000):
-        item_price_median = df['item_price'].median()
-
-        new_data = {
-            'date_block_num': np.random.randint(month_left, month_right, num_new_records), # I use records with date_block_num >= 11 for training for submissions to decrease the number of zero lag features
-            'shop_id': np.random.choice(df['shop_id'].unique().tolist(), num_new_records),
-            'item_id': np.random.choice(df['item_id'].unique().tolist(), num_new_records),
-            'item_cnt_month': 0,
-            'item_price': item_price_median,
-            'month': 0,
-            'year': 0,
-            'item_name': 'Sample Item',
-            'item_category_id': np.random.choice(df['item_category_id'].unique().tolist(), num_new_records),
-            'item_category_name': 'Sample Category',
-            'shop_name': 'Sample Shop'
-        }
-
-        new_df = pd.DataFrame(new_data)
-
-        new_df['month'] = new_df['date_block_num'] % 12
-        new_df['year'] = new_df['date_block_num'] // 12
-
-        df = pd.concat([df, new_df], ignore_index=True)
-
-        return df
 
     @staticmethod
     def train_add_months_since_last_sale(aggregated_df, load_precalculated=False, precalculated_path='../data/aggregated_months.csv'):
@@ -176,9 +150,7 @@ class FeatureExtractionLayer:
 
 
     @staticmethod
-    def train_transform(df, aggregated_df, num_new_zero_records=0, clip_target=True):
-        if num_new_zero_records > 0:
-            aggregated_df = FeatureExtractionLayer.add_zero_records(aggregated_df, num_new_records=num_new_zero_records)
+    def train_transform(df, aggregated_df, clip_target=True):
 
         # 1. Add "months_since_last_sale" feature
         aggregated_df = FeatureExtractionLayer.train_add_months_since_last_sale(aggregated_df, load_precalculated=True)
@@ -237,9 +209,7 @@ class FeatureExtractionLayer:
     
 
     @staticmethod
-    def test_transform(df, aggregated_df, test_df, num_new_zero_records=0, clip_target=True):
-        if num_new_zero_records > 0:
-            aggregated_df = FeatureExtractionLayer.add_zero_records(aggregated_df, num_new_records=num_new_zero_records)
+    def test_transform(df, aggregated_df, test_df, clip_target=True):
 
         # 1. Add "months_since_last_sale" feature
         test_df = FeatureExtractionLayer.test_add_months_since_last_sale(aggregated_df, test_df, load_precalculated=True)

@@ -19,8 +19,10 @@ def create_full_train_dataset(train_df, train_aggregated, items_df, categories_d
     full_train_df = []
     cols = ['date_block_num', 'shop_id', 'item_id']
     for i in range(34):
-        sales = train_df[train_df.date_block_num == i]
-        full_train_df.append(np.array(list(itertools.product([i], shops_df.shop_id.unique(), sales.item_id.unique())), dtype='int16'))
+        sales = train_df[train_df.date_block_num <= i]
+        shops = sales.shop_id.unique()
+        for shop in shops:
+            full_train_df.append(np.array(list(itertools.product([i], [shop], sales[sales['shop_id'] == shop].item_id.unique())), dtype='int16'))
         
     full_train_df = pd.DataFrame(np.vstack(full_train_df), columns=cols)
     full_train_df.sort_values(cols, inplace=True)
@@ -28,8 +30,7 @@ def create_full_train_dataset(train_df, train_aggregated, items_df, categories_d
     full_train_df = full_train_df.merge(train_aggregated, on=cols, how='left')
 
     full_train_df.fillna(0, inplace=True)
-    full_train_df.drop('item_price', axis=1, inplace=True)
-    full_train_df = transform_df_types(full_train_df, int_columns=['item_cnt_month'])
+    full_train_df = transform_df_types(full_train_df)
     full_train_df = ETLTransform.merge_df(full_train_df, items_df, categories_df, shops_df)
 
     return full_train_df

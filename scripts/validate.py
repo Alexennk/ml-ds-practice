@@ -75,9 +75,7 @@ class ModelTrainer:
         tscv = TimeSeriesSplit(n_splits=cv_n_splits, method=cv_method, train_start=train_start)
 
         for train_idx, test_idx in tscv.split(X):
-            X_new = X.copy()
-            X_new.drop('date_block_num', axis=1, inplace=True)
-            X_train, X_test = X_new[train_idx], X_new[test_idx]
+            X_train, X_test = X[train_idx], X[test_idx]
             y_train, y_test = y[train_idx], y[test_idx]
             
             if apply_scaling:
@@ -105,3 +103,22 @@ class ModelTrainer:
 
             if len(to_return) == 1: return to_return[0]
             return tuple(to_return)
+        
+
+def get_submission(model, test, scaler=None, rounding=False, submission_tag=""):
+    test_id = test["ID"]
+    test = test.drop(["ID"], axis=1)
+
+    if scaler is not None:
+        test = scaler.transform(test)
+
+    y_pred = model.predict(test)
+
+    if rounding:
+        y_pred = y_pred.round()
+        
+    y_pred = y_pred.clip(0, 20)
+
+    submission = pd.DataFrame({"ID": test_id, "item_cnt_month": y_pred})
+    submission['ID'] = submission['ID'].astype(int)
+    submission.to_csv("submission_" + submission_tag + ".csv", index=False)
