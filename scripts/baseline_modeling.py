@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -62,4 +63,40 @@ class PredictionVisualizer:
         plt.xlim(0, 25)
         plt.xticks(range(-2, 22))
         plt.legend(title="Target sets", fontsize=10)
+        plt.show()
+
+    @staticmethod
+    def plot_coefficients(model, df, model_name="Lasso"):
+        non_zero_coeffs = model.coef_[model.coef_ != 0]
+        non_zero_features = df.columns[model.coef_ != 0]
+
+        sorted_indices = np.argsort(non_zero_coeffs)
+        sorted_coeffs = non_zero_coeffs[sorted_indices]
+        sorted_features = non_zero_features[sorted_indices]
+
+        plt.figure(figsize=(8, 4))
+        plt.barh(range(len(sorted_coeffs)), sorted_coeffs, color="skyblue")
+        plt.yticks(range(len(sorted_coeffs)), sorted_features)
+        plt.xlabel("Coefficient Value")
+        plt.title(model_name + " Coefficients (Non-Zero)")
+        plt.tight_layout()
+        plt.show()
+
+    @staticmethod
+    def plot_feature_importances(model, df, model_name="Tuned Random Forest"):
+        feature_importances = model.feature_importances_
+        features = df.columns
+
+        importance_df = pd.DataFrame(
+            {"Feature": features, "Importance": feature_importances}
+        )
+        importance_df = importance_df.sort_values(by="Importance", ascending=False)
+
+        plt.figure(figsize=(10, 7))
+        plt.barh(importance_df["Feature"], importance_df["Importance"], color="skyblue")
+        plt.xlabel("Importance")
+        plt.ylabel("Feature")
+        plt.title(f"Feature Importances ({model_name})")
+        plt.gca().invert_yaxis()
+        plt.tight_layout()
         plt.show()
