@@ -83,14 +83,14 @@ class ETLTransform:
 
     @staticmethod
     def change_shop_names(df):
-        df.loc[
-            df["shop_name"] == "!Якутск Орджоникидзе, 56 фран", "shop_name"
-        ] = "Якутск Орджоникидзе, 56"
-        df.loc[
-            df["shop_name"] == '!Якутск ТЦ "Центральный" фран', "shop_name"
-        ] = 'Якутск ТЦ "Центральный"'
-        df.loc[
-            df["shop_name"] == "Жуковский ул. Чкалова 39м?", "shop_name"
-        ] = "Жуковский ул. Чкалова 39м²"
+        df.loc[df["shop_name"] == "!Якутск Орджоникидзе, 56 фран", "shop_name"] = (
+            "Якутск Орджоникидзе, 56"
+        )
+        df.loc[df["shop_name"] == '!Якутск ТЦ "Центральный" фран', "shop_name"] = (
+            'Якутск ТЦ "Центральный"'
+        )
+        df.loc[df["shop_name"] == "Жуковский ул. Чкалова 39м?", "shop_name"] = (
+            "Жуковский ул. Чкалова 39м²"
+        )
 
         return df

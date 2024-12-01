@@ -78,6 +78,7 @@ class ModelTrainer:
         cv_n_splits=5,
         train_start=0,
         eval_set=False,
+        print_splits_scores=True,
         return_scores=False,
         return_model=False,
     ):
@@ -112,7 +113,8 @@ class ModelTrainer:
             score = np.sqrt(mean_squared_error(y_test, y_pred))
             scores.append(score)
 
-            print(f"{len(scores)} split RMSE: {score:.2f}\n")
+            if print_splits_scores:
+                print(f"{len(scores)} split RMSE: {score:.2f}\n")
 
         print(f"Average RMSE: {np.mean(scores):.2f}")
 

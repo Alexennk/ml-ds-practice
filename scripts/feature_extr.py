@@ -30,9 +30,9 @@ class FeatureExtractionLayer:
                 row_prev = aggregated_sorted.iloc[row.Index - 1]
                 if row_prev["item_id"] == row.item_id:
                     if row.date_block_num == row_prev["date_block_num"]:
-                        aggregated_sorted.at[
-                            row.Index, "months_since_last_sale"
-                        ] = row_prev["months_since_last_sale"]
+                        aggregated_sorted.at[row.Index, "months_since_last_sale"] = (
+                            row_prev["months_since_last_sale"]
+                        )
                     else:
                         aggregated_sorted.at[row.Index, "months_since_last_sale"] = (
                             row.date_block_num - row_prev["date_block_num"]
@@ -82,9 +82,9 @@ class FeatureExtractionLayer:
                 row_prev = united_subdf_sorted.iloc[row.Index - 1]
                 if row_prev["item_id"] == row.item_id:
                     if row.date_block_num == row_prev["date_block_num"]:
-                        united_subdf_sorted.at[
-                            row.Index, "months_since_last_sale"
-                        ] = row_prev["months_since_last_sale"]
+                        united_subdf_sorted.at[row.Index, "months_since_last_sale"] = (
+                            row_prev["months_since_last_sale"]
+                        )
                     else:
                         united_subdf_sorted.at[row.Index, "months_since_last_sale"] = (
                             row.date_block_num - row_prev["date_block_num"]
