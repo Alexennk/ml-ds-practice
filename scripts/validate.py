@@ -2,8 +2,6 @@ import numpy as np
 import pandas as pd
 from sklearn.metrics import mean_squared_error
 from sklearn.model_selection import BaseCrossValidator
-from xgboost import XGBRegressor
-from sklearn.linear_model import LinearRegression
 from sklearn.preprocessing import StandardScaler
 
 
@@ -18,7 +16,9 @@ class TimeSeriesSplit(BaseCrossValidator):
         random_state: random seed
     """
 
-    def __init__(self, n_splits=5, method='expanding', random_state=None, train_start=0):
+    def __init__(
+        self, n_splits=5, method="expanding", random_state=None, train_start=0
+    ):
         self.n_splits = n_splits
         self.method = method
         self.train_start = train_start
@@ -28,43 +28,62 @@ class TimeSeriesSplit(BaseCrossValidator):
         return self.n_splits
 
     def split(self, X, y=None, groups=None):
-        n_months = X['date_block_num'].max() + 1
+        n_months = X["date_block_num"].max() + 1
         method = self.method
-        
-        if method == 'expanding':
+
+        if method == "expanding":
 
             for i in range(self.n_splits, 0, -1):
-                train_idx = (X['date_block_num'] < n_months - i) & (X['date_block_num'] >= self.train_start)
-                test_idx = X['date_block_num'] == n_months - i
+                train_idx = (X["date_block_num"] < n_months - i) & (
+                    X["date_block_num"] >= self.train_start
+                )
+                test_idx = X["date_block_num"] == n_months - i
 
                 yield train_idx, test_idx
-        
-        elif method == 'sliding':
 
-            m_in_split = n_months // self.n_splits # number of months in a single split (perhaps, except for the last one)
+        elif method == "sliding":
+
+            m_in_split = (
+                n_months // self.n_splits
+            )  # number of months in a single split (perhaps, except for the last one)
 
             for i in range(1, self.n_splits):
-                train_idx = (X['date_block_num'] < i * m_in_split) & (X['date_block_num'] >= m_in_split * (i - 1))
-                test_idx = X['date_block_num'] == i * m_in_split
+                train_idx = (X["date_block_num"] < i * m_in_split) & (
+                    X["date_block_num"] >= m_in_split * (i - 1)
+                )
+                test_idx = X["date_block_num"] == i * m_in_split
 
                 yield train_idx, test_idx
-            
-            train_idx = (X['date_block_num'] < n_months - 1) & (X['date_block_num'] >= m_in_split * (self.n_splits - 1)) # all indexes left go to the last block
-            test_idx = X['date_block_num'] == n_months - 1
+
+            train_idx = (X["date_block_num"] < n_months - 1) & (
+                X["date_block_num"] >= m_in_split * (self.n_splits - 1)
+            )  # all indexes left go to the last block
+            test_idx = X["date_block_num"] == n_months - 1
 
             yield train_idx, test_idx
 
         else:
-            
+
             raise ValueError("'method' parameter should be 'expanding' or 'sliding'")
 
 
 class ModelTrainer:
-
     @staticmethod
-    def train_model(X, y, model, apply_scaling=False, cv_method='expanding', cv_n_splits=5, train_start=0, eval_set=False, return_scores=False, return_model=False):
+    def train_model(
+        X,
+        y,
+        model,
+        apply_scaling=False,
+        cv_method="expanding",
+        cv_n_splits=5,
+        train_start=0,
+        eval_set=False,
+        print_splits_scores=True,
+        return_scores=False,
+        return_model=False,
+    ):
         """
-        Returns on of these: 
+        Returns on of these:
             - None
             - model
             - scores
@@ -72,12 +91,14 @@ class ModelTrainer:
         """
 
         scores = []
-        tscv = TimeSeriesSplit(n_splits=cv_n_splits, method=cv_method, train_start=train_start)
+        tscv = TimeSeriesSplit(
+            n_splits=cv_n_splits, method=cv_method, train_start=train_start
+        )
 
         for train_idx, test_idx in tscv.split(X):
             X_train, X_test = X[train_idx], X[test_idx]
             y_train, y_test = y[train_idx], y[test_idx]
-            
+
             if apply_scaling:
                 scaler = StandardScaler()
                 X_train = scaler.fit_transform(X_train)
@@ -92,18 +113,22 @@ class ModelTrainer:
             score = np.sqrt(mean_squared_error(y_test, y_pred))
             scores.append(score)
 
-            print(f"{len(scores)} split RMSE: {score:.2f}\n")
-        
+            if print_splits_scores:
+                print(f"{len(scores)} split RMSE: {score:.2f}\n")
+
         print(f"Average RMSE: {np.mean(scores):.2f}")
 
         if return_scores or return_model:
             to_return = []
-            if return_model: to_return.append(model)
-            if return_scores: to_return.append(scores)
+            if return_model:
+                to_return.append(model)
+            if return_scores:
+                to_return.append(scores)
 
-            if len(to_return) == 1: return to_return[0]
+            if len(to_return) == 1:
+                return to_return[0]
             return tuple(to_return)
-        
+
 
 def get_submission(model, test, scaler=None, rounding=False, submission_tag=""):
     test_id = test["ID"]
@@ -116,9 +141,9 @@ def get_submission(model, test, scaler=None, rounding=False, submission_tag=""):
 
     if rounding:
         y_pred = y_pred.round()
-        
+
     y_pred = y_pred.clip(0, 20)
 
     submission = pd.DataFrame({"ID": test_id, "item_cnt_month": y_pred})
-    submission['ID'] = submission['ID'].astype(int)
+    submission["ID"] = submission["ID"].astype(int)
     submission.to_csv("submission_" + submission_tag + ".csv", index=False)
