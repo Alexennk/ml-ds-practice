@@ -1,0 +1,52 @@
+Metadata-Version: 2.1
+Name: innowise-ml-internship-alexennk
+Version: 0.1.3
+Summary: A package with scripts for ml-ds-project
+Author: Aleksey Senkin
+Author-email: aleksey.senkin@innowise.com
+Requires-Python: >=3.12
+Description-Content-Type: text/markdown
+Requires-Dist: contourpy==1.3.1
+Requires-Dist: cycler==0.12.1
+Requires-Dist: fonttools==4.55.3
+Requires-Dist: joblib==1.4.2
+Requires-Dist: kiwisolver==1.4.7
+Requires-Dist: matplotlib==3.10.0
+Requires-Dist: numpy==2.2.0
+Requires-Dist: packaging==24.2
+Requires-Dist: pandas==2.2.3
+Requires-Dist: pillow==11.0.0
+Requires-Dist: pyparsing==3.2.0
+Requires-Dist: python-dateutil==2.9.0.post0
+Requires-Dist: pytz==2024.2
+Requires-Dist: scikit-learn==1.6.0
+Requires-Dist: scipy==1.14.1
+Requires-Dist: seaborn==0.13.2
+Requires-Dist: six==1.17.0
+Requires-Dist: threadpoolctl==3.5.0
+Requires-Dist: tzdata==2024.2
+Provides-Extra: test
+Requires-Dist: pip>=24.3.0; extra == "test"
+Requires-Dist: flake8>=6.0.0; extra == "test"
+Requires-Dist: black>=22.6.0; extra == "test"
+
+# **ML-DS-Practice**
+
+## **Data Description:**
+### **Original data source (Kaggle):** 
+https://www.kaggle.com/competitions/competitive-data-science-predict-future-sales/data
+### **All original data plus additional files used in the repository (Google Drive):**
+https://drive.google.com/drive/folders/1OcNdg6yC0V4evJfgyLjD8lPho5fnxpg4?usp=drive_link
+
+**All files list:**
+- **sales_train.csv** - the training set. Daily historical data from January 2013 to October 2015.
+- **test.csv** - the test set. You need to forecast the sales for these shops and products for November 2015.
+- **sample_submission.csv** - a sample submission file in the correct format.
+- **items.csv** - supplemental information about the items/products.
+- **item_categories.csv**  - supplemental information about the items categories.
+- **shops.csv** - supplemental information about the shops.
+- **merged_train.csv**, **merged_test.csv** and **merged_train_aggregated.csv** - all original files merged and cleared
+- **full_train.csv** - contains **"item_cnt_month"** value for each ("date_block_num", "shop_id") pair; used in EDA and optionally in Feature Extraction instead of 'merged_train_aggregated.csv'
+- **result_test.csv** and *result_train.csv* - datasets with all extracted features
+- **result_test_full.csv** and **result_train_full.csv** - datasets based on 'full_train.csv' with all extracted features
+- **models/** folder with some models saved (used only in 'modeling.ipynb' notebook)

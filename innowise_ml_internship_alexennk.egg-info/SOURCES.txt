@@ -1,0 +1,17 @@
+MANIFEST.in
+README.md
+requirements.txt
+setup.py
+innowise_ml_internship_alexennk.egg-info/PKG-INFO
+innowise_ml_internship_alexennk.egg-info/SOURCES.txt
+innowise_ml_internship_alexennk.egg-info/dependency_links.txt
+innowise_ml_internship_alexennk.egg-info/not-zip-safe
+innowise_ml_internship_alexennk.egg-info/requires.txt
+innowise_ml_internship_alexennk.egg-info/top_level.txt
+scripts/__init__.py
+scripts/dqc.py
+scripts/eda.py
+scripts/etl.py
+scripts/feature_extr.py
+scripts/modeling.py
+scripts/validate.py
