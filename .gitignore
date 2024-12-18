@@ -9,3 +9,4 @@ scripts/__pycache__
 # build/
 # *.egg-info/
 myenv/
+/data
