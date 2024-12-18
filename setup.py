@@ -23,7 +23,6 @@ setup(
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
     packages=find_packages(),
-    # package_dir={"": "scripts"},
     install_requires=read_requirements("requirements.txt"),
     extras_require=extras,
     python_requires=">=3.12",
