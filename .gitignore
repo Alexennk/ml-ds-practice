@@ -10,3 +10,4 @@ scripts/__pycache__
 # *.egg-info/
 myenv/
 /data
+/generated_token.json
