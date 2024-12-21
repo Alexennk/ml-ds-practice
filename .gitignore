@@ -11,3 +11,5 @@ scripts/__pycache__
 myenv/
 /data
 generated_token.json
+.profile
+/models
