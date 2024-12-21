@@ -16,7 +16,7 @@ extras = {"test": test_deps}
 
 setup(
     name="innowise-ml-internship-alexennk",
-    version="0.1.5",
+    version="0.1.6",
     author="Aleksey Senkin",
     author_email="aleksey.senkin@innowise.com",
     description="A package with scripts for ml-ds-project",
