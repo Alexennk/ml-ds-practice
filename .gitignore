@@ -13,3 +13,4 @@ myenv/
 generated_token.json
 .profile
 /models
+.neptune/

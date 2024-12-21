@@ -4,4 +4,4 @@
     url = gdrive://1OcNdg6yC0V4evJfgyLjD8lPho5fnxpg4
     gdrive_client_id = 764869342267-2m09425unbvpesks0kkihrqp4i0da2gs.apps.googleusercontent.com
     gdrive_client_secret = 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
-    gdrive_user_credentials_file = ../generated_token.json
+    gdrive_user_credentials_file = ../additional_files/generated_token.json
