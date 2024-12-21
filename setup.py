@@ -16,7 +16,7 @@ extras = {"test": test_deps}
 
 setup(
     name="innowise-ml-internship-alexennk",
-    version="0.1.6",
+    version="0.2.0",
     author="Aleksey Senkin",
     author_email="aleksey.senkin@innowise.com",
     description="A package with scripts for ml-ds-project",
@@ -25,7 +25,7 @@ setup(
     packages=find_packages(),
     install_requires=read_requirements("requirements.txt"),
     extras_require=extras,
-    python_requires=">=3.12",
+    python_requires=">=3.7",
     include_package_data=True,
     zip_safe=False,
 )
