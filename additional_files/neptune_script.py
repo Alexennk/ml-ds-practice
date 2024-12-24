@@ -5,12 +5,18 @@ import pandas as pd
 import numpy as np
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import root_mean_squared_error
+
+import sys
+sys.path.append("../")
 from scripts.validate import TimeSeriesSplit
 from scripts.etl import transform_df_types
 from scripts.modeling import PredictionVisualizer
 
 # init neptune
 run = neptune.init_run(monitoring_namespace="monitoring")
+
+# log package version
+run["test_pypi_package_version"] = "1.0.1"
 
 # log dvc info
 dvc_version = subprocess.getoutput("dvc version")
@@ -27,7 +33,7 @@ run["algorithm"] = "Random Forest Regressor"
 run["cv/parameters"] = {"n_splits": 1, "train_start": 0}
 
 # load data
-train_df = pd.read_csv("data/result_train.csv")
+train_df = pd.read_csv("../data/result_train.csv")
 train_df = transform_df_types(train_df)
 
 train = train_df.select_dtypes(include=np.number)
@@ -68,7 +74,7 @@ run["summary"] = npt_utils.create_regressor_summary(
     rfr, X_train, X_test, y_train, y_test
 )
 
-run["serialized_model"].upload("models/best_rfr.pkl")
+run["serialized_model"].upload("../models/best_rfr.pkl")
 
 # add other logs
 
@@ -86,7 +92,7 @@ name = PredictionVisualizer.plot_predictions_distribution(
 )
 run["visuals/predictions_distribution"].upload(name)
 
-PredictionVisualizer.plot_residuals(
+name = PredictionVisualizer.plot_residuals(
     y_test, y_pred, model_name="Best parameters RFR", for_neptune=True
 )
 run["visuals/residuals_plot"].upload(name)

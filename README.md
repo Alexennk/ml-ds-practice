@@ -6,6 +6,13 @@ https://www.kaggle.com/competitions/competitive-data-science-predict-future-sale
 ### **All original data plus additional files used in the repository (Google Drive):**
 https://drive.google.com/drive/folders/1OcNdg6yC0V4evJfgyLjD8lPho5fnxpg4?usp=drive_link
 
+## **Test PyPI package with python scripts:**
+https://test.pypi.org/project/innowise-ml-internship-alexennk/1.0.2/
+### **Install package with this command:**
+python -m pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple innowise-ml-internship-alexennk==1.0.2
+
+P.S. Extra url added to download packages that are not listed on Test PyPI
+
 **All files list:**
 - **sales_train.csv** - the training set. Daily historical data from January 2013 to October 2015.
 - **test.csv** - the test set. You need to forecast the sales for these shops and products for November 2015.
