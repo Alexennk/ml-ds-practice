@@ -38,7 +38,7 @@ class FeatureExtractionLayer:
                             row.date_block_num - row_prev["date_block_num"]
                         )
 
-            aggregated_sorted.to_csv(precalculated_path, index=False)
+            # aggregated_sorted.to_csv(precalculated_path, index=False)
 
         aggregated_train_df = transform_df_types(aggregated_sorted)
 
@@ -226,7 +226,7 @@ class FeatureExtractionLayer:
 
         # 1. Add "months_since_last_sale" feature
         aggregated_df = FeatureExtractionLayer.train_add_months_since_last_sale(
-            aggregated_df, load_precalculated=True
+            aggregated_df, load_precalculated=False
         )
 
         # 2. Calculate revenue
@@ -352,7 +352,7 @@ class FeatureExtractionLayer:
 
         # 1. Add "months_since_last_sale" feature
         test_df = FeatureExtractionLayer.test_add_months_since_last_sale(
-            aggregated_df, test_df, load_precalculated=True
+            aggregated_df, test_df, load_precalculated=False
         )
 
         # 2. Calculate revenue
