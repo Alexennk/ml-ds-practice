@@ -253,7 +253,7 @@ class FeatureExtractionLayer:
             "revenue",
             on_columns=["shop_id", "date_block_num"],
             operation="mean",
-            lags=[1, 2, 3],
+            lags=[1, 2, 3, 6, 12],
         )
 
         # 5. Clip "item_cnt_month" into [0, 20] range; optional for kaggle
@@ -285,7 +285,7 @@ class FeatureExtractionLayer:
             aggregated_lagged,
             "item_cnt_month",
             on_columns=["item_id", "shop_id", "date_block_num"],
-            lags=[1, 2, 3],
+            lags=[1, 2, 3, 6, 12],
         )
 
         # 8. Add average "item_cnt_month" lagged features by month
@@ -342,7 +342,7 @@ class FeatureExtractionLayer:
             aggregated_lagged,
             "avg_item_price",
             on_columns=["item_id", "date_block_num"],
-            lags=[1, 2, 3],
+            lags=[1, 2, 3, 4, 5, 6],
         )
 
         return aggregated_lagged
