@@ -7,6 +7,7 @@ from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import root_mean_squared_error
 
 import sys
+
 sys.path.append("../")
 from scripts.validate import TimeSeriesSplit
 from scripts.etl import transform_df_types

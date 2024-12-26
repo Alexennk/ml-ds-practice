@@ -222,12 +222,13 @@ class FeatureExtractionLayer:
         return df
 
     @staticmethod
-    def train_transform(df, aggregated_df, clip_target=True):
+    def train_transform(df, aggregated_df, clip_target=True, for_airflow=False):
 
-        # 1. Add "months_since_last_sale" feature
-        aggregated_df = FeatureExtractionLayer.train_add_months_since_last_sale(
-            aggregated_df, load_precalculated=False
-        )
+        if not for_airflow:
+            # 1. Add "months_since_last_sale" feature
+            aggregated_df = FeatureExtractionLayer.train_add_months_since_last_sale(
+                aggregated_df, load_precalculated=False
+            )
 
         # 2. Calculate revenue
         df["revenue"] = df["item_price"] * df["item_cnt_day"]
@@ -248,12 +249,16 @@ class FeatureExtractionLayer:
         aggregated_df["revenue_mean_on_shop_id"].fillna(0, inplace=True)
 
         # 4. Add revenue lagged features
+        if for_airflow:
+            lags_array = [1, 2, 3]
+        else:
+            lags_array = [1, 2, 3, 6, 12]
         aggregated_lagged = FeatureExtractionLayer.train_add_lag_features(
             aggregated_df,
             "revenue",
             on_columns=["shop_id", "date_block_num"],
             operation="mean",
-            lags=[1, 2, 3, 6, 12],
+            lags=lags_array,
         )
 
         # 5. Clip "item_cnt_month" into [0, 20] range; optional for kaggle
@@ -281,11 +286,15 @@ class FeatureExtractionLayer:
         aggregated_lagged["item_cnt_month_mean_on_item_id"].fillna(0, inplace=True)
 
         # 7. Add "item_cnt_month" lagged features
+        if for_airflow:
+            lags_array = [1, 2, 3]
+        else:
+            lags_array = [1, 2, 3, 6, 12]
         aggregated_lagged = FeatureExtractionLayer.train_add_lag_features(
             aggregated_lagged,
             "item_cnt_month",
             on_columns=["item_id", "shop_id", "date_block_num"],
-            lags=[1, 2, 3, 6, 12],
+            lags=lags_array,
         )
 
         # 8. Add average "item_cnt_month" lagged features by month
@@ -338,11 +347,16 @@ class FeatureExtractionLayer:
         aggregated_lagged = aggregated_lagged.merge(
             avg_item_price, on=["item_id", "date_block_num"], how="left"
         )
+
+        if for_airflow:
+            lags_array = [1, 2, 3]
+        else:
+            lags_array = [1, 2, 3, 4, 5, 6]
         aggregated_lagged = FeatureExtractionLayer.train_add_lag_features(
             aggregated_lagged,
             "avg_item_price",
             on_columns=["item_id", "date_block_num"],
-            lags=[1, 2, 3, 4, 5, 6],
+            lags=lags_array,
         )
 
         return aggregated_lagged
