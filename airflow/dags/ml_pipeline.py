@@ -91,7 +91,7 @@ def extract_features():
         train_df, aggregated_train_df, for_airflow=True
     )
 
-    print("---- saving the dataframe ewith extracted features ----")
+    print("---- saving the dataframe with extracted features ----")
 
     aggregated_lagged.to_csv("result_train.csv", index=False)
 
@@ -220,9 +220,7 @@ def get_neptune_token_from_variable() -> "dict[str, str]":
         dict[str,str]: A dict containing the NEPTUNE_API_TOKEN and NEPTUNE_PROJECT
     """
     return {
-        "api_token": """eyJhcGlfYWRkcmVzcyI6Imh0dHBzOi8vYXBwLm5lcHR1bmUuYWkiLCJhcGlfdXJs
-            IjoiaHR0cHM6Ly9hcHAubmVwdHVuZS5haSIsImFwaV9rZXkiOiI3YmY3NjQ0ZC0wMzM1LTQ2Mj
-                AtYTE4Ny0wZmE2MmYyZWI1ZTUifQ==""",
+        "api_token": "eyJhcGlfYWRkcmVzcyI6Imh0dHBzOi8vYXBwLm5lcHR1bmUuYWkiLCJhcGlfdXJsIjoiaHR0cHM6Ly9hcHAubmVwdHVuZS5haSIsImFwaV9rZXkiOiI3YmY3NjQ0ZC0wMzM1LTQ2MjAtYTE4Ny0wZmE2MmYyZWI1ZTUifQ==",
         "project": "alexennk/innowise-neptune",
     }
 

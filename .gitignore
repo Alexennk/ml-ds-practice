@@ -5,3 +5,6 @@ notebooks/competitive-data-science-predict-future-sales.zip
 notebooks/catboost_info/
 scripts/__pycache__
 .vscode/
+*.pyc
+*.log
+scheduler/

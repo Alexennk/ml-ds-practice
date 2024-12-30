@@ -11,4 +11,4 @@ exclude =
     venv,
     .venv
 max-line-length = 88
-ignore = D202,W503,E203,E402
+ignore = D202,W503,E203,E402,E501
