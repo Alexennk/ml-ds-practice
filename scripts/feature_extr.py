@@ -286,10 +286,6 @@ class FeatureExtractionLayer:
         aggregated_lagged["item_cnt_month_mean_on_item_id"].fillna(0, inplace=True)
 
         # 7. Add "item_cnt_month" lagged features
-        if for_airflow:
-            lags_array = [1, 2, 3]
-        else:
-            lags_array = [1, 2, 3, 6, 12]
         aggregated_lagged = FeatureExtractionLayer.train_add_lag_features(
             aggregated_lagged,
             "item_cnt_month",
@@ -348,9 +344,7 @@ class FeatureExtractionLayer:
             avg_item_price, on=["item_id", "date_block_num"], how="left"
         )
 
-        if for_airflow:
-            lags_array = [1, 2, 3]
-        else:
+        if not for_airflow:
             lags_array = [1, 2, 3, 4, 5, 6]
         aggregated_lagged = FeatureExtractionLayer.train_add_lag_features(
             aggregated_lagged,
