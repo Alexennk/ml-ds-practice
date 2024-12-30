@@ -2,7 +2,7 @@ FROM apache/airflow:2.10.4
 
 COPY requirements_airflow.txt .
 
-RUN python -m pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple innowise-ml-internship-alexennk==1.0.5
+RUN python -m pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple innowise-ml-internship-alexennk
 
 RUN pip install -r requirements_airflow.txt
 

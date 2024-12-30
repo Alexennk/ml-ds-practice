@@ -1,7 +1,7 @@
 .PHONY: install lint clean
 
 
-REQUIREMENTS = requirements-dev.txt
+REQUIREMENTS = additional_files/requirements-dev.txt
 PIP = pip
 
 

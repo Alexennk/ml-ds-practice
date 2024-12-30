@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-from sklearn.metrics import mean_squared_error
+from sklearn.metrics import root_mean_squared_error
 from sklearn.model_selection import BaseCrossValidator
 from sklearn.preprocessing import StandardScaler
 
@@ -110,7 +110,7 @@ class ModelTrainer:
                 model.fit(X_train, y_train)
 
             y_pred = model.predict(X_test)
-            score = np.sqrt(mean_squared_error(y_test, y_pred))
+            score = root_mean_squared_error(y_test, y_pred)
             scores.append(score)
 
             if print_splits_scores:
