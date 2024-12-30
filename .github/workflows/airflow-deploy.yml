@@ -3,7 +3,7 @@ name: Deploy Airflow Container
 on:
   push:
     branches:
-      - DS-4.2
+      - main
 
 jobs:
   deploy:
