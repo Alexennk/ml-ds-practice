@@ -2,6 +2,7 @@ from airflow.models import DAG
 from airflow.decorators import task
 import json
 from datetime import datetime
+from importlib.metadata import version, PackageNotFoundError
 from neptune_airflow import NeptuneLogger
 import neptune.integrations.sklearn as npt_utils
 from scripts.validate import TimeSeriesSplit
@@ -32,9 +33,17 @@ def log_to_json(data, file_path="neptune_logs.json"):
 def log_base_info():
     print('---- "log_base_info" component ----')
 
+    def get_package_version(package_name):
+        try:
+            return version(package_name)
+        except PackageNotFoundError:
+            return None
+
     log_to_json(
         {
-            "log_base_info/test_pypi_package_version": "1.0.5",
+            "log_base_info/test_pypi_package_version": get_package_version(
+                "innowise-ml-internship-alexennk"
+            ),
             "log_base_info/algorithm": "Random Forest Regressor",
             "log_base_info/cv_parameters": {"n_splits": 1, "train_start": 0},
         }
