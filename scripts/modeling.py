@@ -2,11 +2,14 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
+import tempfile
 
 
 class PredictionVisualizer:
     @staticmethod
-    def model_performance_sc_plot(predictions, labels, title="Scatter Plot"):
+    def model_performance_sc_plot(
+        predictions, labels, title="Scatter Plot", for_neptune=False
+    ):
         min_val = max(max(predictions), max(labels))
         max_val = min(min(predictions), min(labels))
         performance_df = pd.DataFrame({"Label": labels})
@@ -22,10 +25,18 @@ class PredictionVisualizer:
         )
         plt.plot([min_val, max_val], [min_val, max_val], "m--")
         plt.suptitle(title, fontsize=16)
-        plt.show()
+        if for_neptune:
+            with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tmpfile:
+                plt.savefig(tmpfile.name)
+                plt.close()
+
+                # Log the plot to Neptune
+                return tmpfile.name
+        else:
+            plt.show()
 
     @staticmethod
-    def plot_residuals(y_true, y_pred, model_name="Model"):
+    def plot_residuals(y_true, y_pred, model_name="Model", for_neptune=False):
         residuals = y_true - y_pred
         _, axes = plt.subplots(1, 2, figsize=(12, 4))
 
@@ -39,11 +50,20 @@ class PredictionVisualizer:
         axes[1].set_xlabel("Residuals")
         axes[1].set_title(f"{model_name} - Residual Distribution")
         plt.tight_layout()
-        plt.show()
+
+        if for_neptune:
+            with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tmpfile:
+                plt.savefig(tmpfile.name)
+                plt.close()
+
+                # Log the plot to Neptune
+                return tmpfile.name
+        else:
+            plt.show()
 
     @staticmethod
     def plot_predictions_distribution(
-        y_true, y_pred, histogram=False, model_name="Model"
+        y_true, y_pred, histogram=False, model_name="Model", for_neptune=False
     ):
         plt.figure(figsize=(6, 4))
 
@@ -63,7 +83,16 @@ class PredictionVisualizer:
         plt.xlim(0, 25)
         plt.xticks(range(-2, 22))
         plt.legend(title="Target sets", fontsize=10)
-        plt.show()
+
+        if for_neptune:
+            with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tmpfile:
+                plt.savefig(tmpfile.name)
+                plt.close()
+
+                # Log the plot to Neptune
+                return tmpfile.name
+        else:
+            plt.show()
 
     @staticmethod
     def plot_coefficients(model, df, model_name="Lasso"):

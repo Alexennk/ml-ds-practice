@@ -5,3 +5,13 @@ notebooks/competitive-data-science-predict-future-sales.zip
 notebooks/catboost_info/
 scripts/__pycache__
 .vscode/
+# dist/
+# build/
+# *.egg-info/
+myenv/
+/data
+generated_token.json
+.profile
+/models
+.neptune/
+airflow/
